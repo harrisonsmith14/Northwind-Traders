@@ -6,7 +6,7 @@
 <title>Northwind CRM — Team 3 Prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
   /* ---------- Design tokens ---------- */
   :root {
@@ -53,6 +53,7 @@
     --ease-in:  cubic-bezier(0.7, 0, 0.84, 0);
 
     --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-display: "Instrument Serif", Georgia, serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -80,6 +81,98 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* ============================================================
+     Cinematic motion — fires once on first load
+     ============================================================ */
+  @keyframes introFromTop {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes introFromLeft {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes introFade {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmerIn {
+    0%   { opacity: 0; transform: translateY(20px); filter: blur(8px); }
+    60%  { filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  body.intro .topbar  { animation: introFromTop 600ms var(--ease-out) both; }
+  body.intro .sidebar { animation: introFromLeft 700ms var(--ease-out) both; animation-delay: 80ms; }
+  body.intro .main    { animation: introFade 800ms var(--ease-out) both; animation-delay: 160ms; }
+  body.intro .demo-banner { animation: introFromTop 500ms var(--ease-out) both; }
+
+  /* Page-level reveals (on view switch and initial mount of main) */
+  .reveal { opacity: 0; transform: translateY(12px); }
+  .reveal.in {
+    opacity: 1; transform: translateY(0);
+    transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+  }
+  .reveal-stagger-1.in { transition-delay: 60ms; }
+  .reveal-stagger-2.in { transition-delay: 120ms; }
+  .reveal-stagger-3.in { transition-delay: 180ms; }
+  .reveal-stagger-4.in { transition-delay: 240ms; }
+
+  /* Stagger row reveal on table */
+  tbody tr.reveal-row {
+    opacity: 0; transform: translateY(8px);
+    animation: introFade 500ms var(--ease-out) both;
+  }
+
+  /* ============================================================
+     Custom cursor (desktop only)
+     ============================================================ */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate3d(-50%, -50%, 0);
+    will-change: transform;
+  }
+  .cursor-dot {
+    width: 6px; height: 6px;
+    background: var(--navy-900);
+    border-radius: 50%;
+    transition: opacity 200ms var(--ease-out), width 240ms var(--ease-out), height 240ms var(--ease-out);
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1.5px solid rgba(15, 31, 61, 0.35);
+    border-radius: 50%;
+    transition: width 280ms var(--ease-out),
+                height 280ms var(--ease-out),
+                border-color 200ms var(--ease-out),
+                background 200ms var(--ease-out),
+                opacity 200ms var(--ease-out);
+  }
+  body.cursor-link .cursor-ring {
+    width: 44px; height: 44px;
+    background: rgba(37, 99, 235, 0.10);
+    border-color: rgba(37, 99, 235, 0.40);
+  }
+  body.cursor-link .cursor-dot { opacity: 0; }
+  body.cursor-text .cursor-ring {
+    width: 4px; height: 22px; border-radius: 2px;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  body.cursor-text .cursor-dot { opacity: 0; }
+
+  @media (max-width: 900px), (hover: none) {
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+
+  /* Magnetic button base */
+  .btn-magnetic { will-change: transform; transition: transform 320ms var(--ease-out), background 140ms var(--ease-out); }
 
   /* ---------- Top bar ---------- */
   .topbar {
@@ -168,11 +261,21 @@
     flex-wrap: wrap; gap: var(--space-4);
   }
   .page-title {
-    font-size: 22px; font-weight: 600; color: var(--navy-900);
-    letter-spacing: -0.02em;
+    font-size: 30px; font-weight: 500; color: var(--navy-900);
+    letter-spacing: -0.025em;
     margin: 0; text-wrap: balance;
+    line-height: 1.15;
+    font-family: var(--font-sans);
   }
-  .page-subtitle { color: var(--text-muted); margin-top: 4px; font-size: 13px; }
+  .page-title em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--navy-800);
+    letter-spacing: -0.01em;
+    font-size: 1.07em;
+  }
+  .page-subtitle { color: var(--text-muted); margin-top: 6px; font-size: 13px; }
 
   /* ---------- Buttons ---------- */
   .btn {
@@ -225,14 +328,19 @@
     padding: var(--space-4) var(--space-5);
   }
   .kpi-label {
-    font-size: 12px; color: var(--text-muted); font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.04em;
+    font-size: 13px; color: var(--text-muted); font-weight: 500;
   }
   .kpi-value {
-    font-size: 26px; font-weight: 600; color: var(--navy-900);
+    font-size: 28px; font-weight: 500; color: var(--navy-900);
     margin-top: var(--space-2);
     letter-spacing: -0.025em;
-    line-height: 1.2;
+    line-height: 1.15;
+    font-family: var(--font-sans);
+  }
+  .kpi-value em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
   }
   .kpi-delta { font-size: 12px; margin-top: var(--space-2); font-weight: 500; }
   .kpi-delta.up   { color: var(--green); }
@@ -368,11 +476,11 @@
     box-shadow: var(--shadow-lg);
     max-width: 560px; width: 100%;
     max-height: 90vh; overflow: auto;
-    animation: modalIn 280ms var(--ease-out);
+    animation: modalIn 480ms cubic-bezier(0.22, 1.2, 0.36, 1);
   }
   @keyframes modalIn {
-    from { opacity: 0; transform: translateY(8px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(16px) scale(0.96); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
   }
   .modal-large { max-width: 760px; }
   .modal-header {
@@ -380,7 +488,17 @@
     padding: var(--space-5) var(--space-6);
     border-bottom: 1px solid var(--border-soft);
   }
-  .modal-title { font-size: 17px; font-weight: 600; color: var(--navy-900); margin: 0; letter-spacing: -0.015em; }
+  .modal-title {
+    font-size: 22px; font-weight: 500; color: var(--navy-900);
+    margin: 0; letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .modal-title em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
   .modal-sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
   .modal-body { padding: var(--space-6); }
   .modal-footer {
@@ -422,8 +540,13 @@
     color: white;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
-  .c360-name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-  .c360-meta { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 4px; }
+  .c360-name {
+    font-size: 26px; font-weight: 500; letter-spacing: -0.02em;
+    line-height: 1.15;
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+  .c360-meta { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 8px; }
   .c360-stats {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: var(--space-4);
@@ -510,7 +633,11 @@
   .empty-state h3 { color: var(--navy-900); margin: 0 0 var(--space-2); font-weight: 600; }
 </style>
 </head>
-<body>
+<body class="intro">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursor-ring"></div>
+<div class="cursor-dot" id="cursor-dot"></div>
 
 <!-- Demo banner -->
 <div class="demo-banner">
@@ -703,15 +830,15 @@ function renderCustomers() {
   main.innerHTML = `
     <div class="page-header">
       <div>
-        <h1 class="page-title">Customers</h1>
-        <div class="page-subtitle">One unified profile per customer · ${state.customers.length} total</div>
+        <h1 class="page-title reveal">Your <em>customers</em>, in one place</h1>
+        <div class="page-subtitle reveal reveal-stagger-1">One unified profile per customer · ${state.customers.length} total</div>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px;" class="reveal reveal-stagger-2">
         <button class="btn" id="export-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export
         </button>
-        <button class="btn btn-primary" id="add-customer-btn">
+        <button class="btn btn-primary btn-magnetic" id="add-customer-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Customer
         </button>
@@ -719,29 +846,29 @@ function renderCustomers() {
     </div>
 
     <div class="kpi-grid">
-      <div class="kpi">
+      <div class="kpi reveal reveal-stagger-1">
         <div class="kpi-label">Total Customers</div>
         <div class="kpi-value num">${total}</div>
         <div class="kpi-delta up">▲ ${state.customers.filter(c => c.joinDate >= '2026-01-01').length} this year</div>
       </div>
-      <div class="kpi">
+      <div class="kpi reveal reveal-stagger-2">
         <div class="kpi-label">Gold Tier</div>
         <div class="kpi-value num">${goldCount}</div>
         <div class="kpi-delta up">▲ Loyalty target on track</div>
       </div>
-      <div class="kpi">
+      <div class="kpi reveal reveal-stagger-3">
         <div class="kpi-label">Revenue (Apr 2026)</div>
         <div class="kpi-value num">${fmtMoney(monthRevenue)}</div>
         <div class="kpi-delta up">▲ 12% vs prior month</div>
       </div>
-      <div class="kpi">
+      <div class="kpi reveal reveal-stagger-4">
         <div class="kpi-label">Avg Order Value</div>
         <div class="kpi-value num">${fmtMoney(avgOrder)}</div>
         <div class="kpi-delta up">▲ Up from $498</div>
       </div>
     </div>
 
-    <div class="toolbar">
+    <div class="toolbar reveal reveal-stagger-2">
       <div class="search">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="search" placeholder="Search customers..." value="${escapeAttr(searchQuery)}" />
@@ -753,12 +880,12 @@ function renderCustomers() {
     </div>
 
     ${rows.length === 0 ? `
-      <div class="card card-pad empty-state">
+      <div class="card card-pad empty-state reveal reveal-stagger-3">
         <h3>No customers match your filters</h3>
         <p>Try clearing the search or selecting a different country.</p>
       </div>
     ` : `
-      <div class="table-wrap">
+      <div class="table-wrap reveal reveal-stagger-3">
         <table>
           <thead>
             <tr>
@@ -771,8 +898,8 @@ function renderCustomers() {
             </tr>
           </thead>
           <tbody>
-            ${rows.map(c => `
-              <tr data-customer="${c.id}" class="${freshIds.has(c.id) ? 'fresh' : ''}">
+            ${rows.map((c, idx) => `
+              <tr data-customer="${c.id}" class="${freshIds.has(c.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
                 <td class="num row-muted">${c.id}</td>
                 <td class="row-strong">${escapeHtml(c.name)}</td>
                 <td>${escapeHtml(c.contact)}<div class="row-muted" style="font-size:12px;">${escapeHtml(c.email)}</div></td>
@@ -809,16 +936,16 @@ function renderOrders() {
   main.innerHTML = `
     <div class="page-header">
       <div>
-        <h1 class="page-title">Orders</h1>
-        <div class="page-subtitle">All orders linked to a customer profile · ${orders.length} total</div>
+        <h1 class="page-title reveal">Recent <em>orders</em></h1>
+        <div class="page-subtitle reveal reveal-stagger-1">All orders linked to a customer profile · ${orders.length} total</div>
       </div>
-      <button class="btn btn-primary" id="new-order-btn">
+      <button class="btn btn-primary btn-magnetic reveal reveal-stagger-2" id="new-order-btn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New Order
       </button>
     </div>
 
-    <div class="table-wrap">
+    <div class="table-wrap reveal reveal-stagger-2">
       <table>
         <thead>
           <tr>
@@ -831,10 +958,10 @@ function renderOrders() {
           </tr>
         </thead>
         <tbody>
-          ${orders.map(o => {
+          ${orders.map((o, idx) => {
             const c = customerById(o.customerId);
             return `
-              <tr data-customer="${o.customerId}" class="${freshIds.has(o.id) ? 'fresh' : ''}">
+              <tr data-customer="${o.customerId}" class="${freshIds.has(o.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
                 <td class="num row-muted">${o.id}</td>
                 <td class="num">${o.date}</td>
                 <td class="row-strong">${c ? escapeHtml(c.name) : 'Unknown'}</td>
@@ -865,14 +992,14 @@ function renderLoyalty() {
   main.innerHTML = `
     <div class="page-header">
       <div>
-        <h1 class="page-title">Loyalty Program</h1>
-        <div class="page-subtitle">Customers grouped by lifetime spend</div>
+        <h1 class="page-title reveal">The <em>loyalty</em> program</h1>
+        <div class="page-subtitle reveal reveal-stagger-1">Customers grouped by lifetime spend</div>
       </div>
     </div>
 
     <div class="kpi-grid">
       ${tiers.map((t, i) => `
-        <div class="kpi">
+        <div class="kpi reveal reveal-stagger-${i + 1}">
           <div class="kpi-label">${tierLabel(t)} Tier</div>
           <div class="kpi-value num">${counts[i]}</div>
           <div class="kpi-delta">${total ? Math.round(counts[i]/total*100) : 0}% of customers</div>
@@ -880,7 +1007,7 @@ function renderLoyalty() {
       `).join('')}
     </div>
 
-    <div class="card card-pad">
+    <div class="card card-pad reveal reveal-stagger-3">
       <h3 style="margin:0 0 12px; color:var(--navy-900); font-size:15px;">Tier Criteria</h3>
       <table>
         <thead>
@@ -905,7 +1032,7 @@ function openAddCustomer() {
   openModal(`
     <div class="modal-header">
       <div>
-        <h2 class="modal-title">Add New Customer</h2>
+        <h2 class="modal-title">Add a new <em>customer</em></h2>
         <div class="modal-sub">Creates one unified profile across Sales, Marketing, and Service</div>
       </div>
       <button class="btn btn-ghost btn-icon" id="cancel-add">✕</button>
@@ -967,7 +1094,7 @@ function openNewOrder() {
   openModal(`
     <div class="modal-header">
       <div>
-        <h2 class="modal-title">New Order</h2>
+        <h2 class="modal-title">New <em>order</em></h2>
         <div class="modal-sub">Linked to a customer profile and visible in Customer 360</div>
       </div>
       <button class="btn btn-ghost btn-icon" id="cancel-add">✕</button>
@@ -1107,7 +1234,142 @@ function render() {
   if (view === 'customers') renderCustomers();
   else if (view === 'orders') renderOrders();
   else if (view === 'loyalty') renderLoyalty();
+
+  // Trigger reveals on the freshly rendered content
+  triggerReveals();
+  // Re-attach magnetic behavior to any new buttons
+  attachMagnetic();
 }
+
+/* ============================================================
+   Reveal-on-render — IntersectionObserver alternative
+   For SPA-style swap, simpler to flip the .in class on next frame
+   ============================================================ */
+function triggerReveals() {
+  // Use double rAF so the initial state paints before transition fires
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    });
+  });
+}
+
+/* ============================================================
+   Magnetic button — gentle pull toward the cursor on hover
+   ============================================================ */
+function attachMagnetic() {
+  document.querySelectorAll('.btn-magnetic').forEach(btn => {
+    if (btn.dataset.magnetized) return;
+    btn.dataset.magnetized = '1';
+    const STRENGTH = 0.18; // how much the button moves toward the cursor
+
+    btn.addEventListener('mousemove', (e) => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - (r.left + r.width / 2);
+      const y = e.clientY - (r.top + r.height / 2);
+      btn.style.transform = `translate(${x * STRENGTH}px, ${y * STRENGTH}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'translate(0, 0)';
+    });
+  });
+}
+
+/* ============================================================
+   Custom cursor — soft ring + dot, follows with spring
+   ============================================================ */
+(function setupCursor() {
+  const ring = document.getElementById('cursor-ring');
+  const dot  = document.getElementById('cursor-dot');
+  if (!ring || !dot) return;
+  // Bail on touch / no-hover devices
+  if (!matchMedia('(hover: hover)').matches) {
+    ring.style.display = 'none'; dot.style.display = 'none';
+    return;
+  }
+
+  let targetX = window.innerWidth / 2, targetY = window.innerHeight / 2;
+  let ringX = targetX, ringY = targetY;
+  let dotX = targetX, dotY = targetY;
+
+  document.addEventListener('mousemove', (e) => {
+    targetX = e.clientX;
+    targetY = e.clientY;
+  });
+
+  function tick() {
+    // Spring lerp — dot follows almost instantly, ring trails
+    dotX += (targetX - dotX) * 0.95;
+    dotY += (targetY - dotY) * 0.95;
+    ringX += (targetX - ringX) * 0.18;
+    ringY += (targetY - ringY) * 0.18;
+    dot.style.transform  = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
+    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // Hover detection — adapt cursor based on element under it
+  document.addEventListener('mouseover', (e) => {
+    const t = e.target;
+    document.body.classList.remove('cursor-link', 'cursor-text');
+    if (t.closest('button, a, [data-customer], .chip, .nav-item, [role="button"]')) {
+      document.body.classList.add('cursor-link');
+    } else if (t.closest('input, textarea, [contenteditable="true"]')) {
+      document.body.classList.add('cursor-text');
+    }
+  });
+
+  // Hide native cursor only on devices that have one
+  document.documentElement.style.cursor = 'none';
+  // But re-enable on inputs so users can see what they're doing
+  const inputStyle = document.createElement('style');
+  inputStyle.textContent = `
+    input, textarea, select, [contenteditable="true"] { cursor: text !important; }
+    button, a, .chip, .nav-item, [data-customer], [role="button"] { cursor: pointer !important; }
+  `;
+  document.head.appendChild(inputStyle);
+})();
+
+/* ============================================================
+   Lenis-style smooth scroll (lightweight, vanilla)
+   ============================================================ */
+(function setupSmoothScroll() {
+  // Bail on reduced-motion
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let currentY = window.scrollY;
+  let targetY = currentY;
+  let isAnimating = false;
+
+  function raf() {
+    const diff = targetY - currentY;
+    if (Math.abs(diff) > 0.4) {
+      currentY += diff * 0.12;
+      window.scrollTo(0, currentY);
+      requestAnimationFrame(raf);
+    } else {
+      window.scrollTo(0, targetY);
+      currentY = targetY;
+      isAnimating = false;
+    }
+  }
+
+  window.addEventListener('wheel', (e) => {
+    // Don't intercept inside scrollable elements (e.g., modal body)
+    if (e.target.closest('.modal-body, .modal')) return;
+    e.preventDefault();
+    targetY = Math.max(0, Math.min(
+      document.documentElement.scrollHeight - window.innerHeight,
+      targetY + e.deltaY
+    ));
+    if (!isAnimating) {
+      isAnimating = true;
+      currentY = window.scrollY;
+      requestAnimationFrame(raf);
+    }
+  }, { passive: false });
+})();
 
 document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(el => {
   el.addEventListener('click', () => { view = el.dataset.view; render(); });
@@ -1116,6 +1378,12 @@ $('#reset-btn').addEventListener('click', () => {
   if (confirm('Reset to seed data? This will replace all current customers and orders.')) {
     resetState();
   }
+});
+
+// Remove intro class after the cinematic intro completes,
+// so subsequent re-renders don't replay it.
+window.addEventListener('load', () => {
+  setTimeout(() => document.body.classList.remove('intro'), 1200);
 });
 
 render();
