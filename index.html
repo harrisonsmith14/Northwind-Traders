@@ -49,8 +49,9 @@
     --space-8: 32px;
     --space-10: 40px;
 
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-in:  cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-out: cubic-bezier(0.65, 0, 0.35, 1);  /* The Awwwards staple — primary signature curve */
+    --ease-in:  cubic-bezier(0.65, 0, 0.35, 1);  /* Same curve, used for symmetry */
+    --ease-press: cubic-bezier(0.2, 0, 0, 1);    /* Snappy material curve — button presses only */
 
     --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     --font-display: "Instrument Serif", Georgia, serif;
@@ -62,8 +63,8 @@
     font-family: var(--font-sans);
     color: var(--text);
     background: var(--bg-soft);
-    font-size: 14px;
-    line-height: 1.55;
+    font-size: 15px;
+    line-height: 1.6;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -83,96 +84,45 @@
   }
 
   /* ============================================================
-     Cinematic motion — fires once on first load
+     Signature motion idiom: Linear-style horizontal slide reveals
+     One curve: cubic-bezier(0.65, 0, 0.35, 1) — the Awwwards staple
+     One direction: slide from left + fade
+     One stagger: 60ms between siblings
      ============================================================ */
-  @keyframes introFromTop {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translate3d(-24px, 0, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
-  @keyframes introFromLeft {
-    from { opacity: 0; transform: translateX(-12px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes introFade {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes shimmerIn {
-    0%   { opacity: 0; transform: translateY(20px); filter: blur(8px); }
-    60%  { filter: blur(0); }
-    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  @keyframes slideInDown {
+    from { opacity: 0; transform: translate3d(0, -8px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
 
-  body.intro .topbar  { animation: introFromTop 600ms var(--ease-out) both; }
-  body.intro .sidebar { animation: introFromLeft 700ms var(--ease-out) both; animation-delay: 80ms; }
-  body.intro .main    { animation: introFade 800ms var(--ease-out) both; animation-delay: 160ms; }
-  body.intro .demo-banner { animation: introFromTop 500ms var(--ease-out) both; }
+  /* Initial cinematic mount — same idiom, applied to chrome */
+  body.intro .topbar      { animation: slideInDown 600ms var(--ease-out) both; }
+  body.intro .demo-banner { animation: slideInDown 500ms var(--ease-out) both; }
+  body.intro .sidebar     { animation: slideInLeft 700ms var(--ease-out) both; animation-delay: 100ms; }
+  body.intro .main        { animation: slideInLeft 700ms var(--ease-out) both; animation-delay: 180ms; }
 
-  /* Page-level reveals (on view switch and initial mount of main) */
-  .reveal { opacity: 0; transform: translateY(12px); }
+  /* Page-level reveals on view switch — same slide-in-left idiom */
+  .reveal { opacity: 0; transform: translate3d(-24px, 0, 0); }
   .reveal.in {
-    opacity: 1; transform: translateY(0);
-    transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+    opacity: 1; transform: translate3d(0, 0, 0);
+    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
   }
   .reveal-stagger-1.in { transition-delay: 60ms; }
   .reveal-stagger-2.in { transition-delay: 120ms; }
   .reveal-stagger-3.in { transition-delay: 180ms; }
   .reveal-stagger-4.in { transition-delay: 240ms; }
 
-  /* Stagger row reveal on table */
+  /* Table rows use the same idiom */
   tbody tr.reveal-row {
-    opacity: 0; transform: translateY(8px);
-    animation: introFade 500ms var(--ease-out) both;
-  }
-
-  /* ============================================================
-     Custom cursor (desktop only)
-     ============================================================ */
-  .cursor-dot, .cursor-ring {
-    position: fixed; top: 0; left: 0;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate3d(-50%, -50%, 0);
-    will-change: transform;
-  }
-  .cursor-dot {
-    width: 6px; height: 6px;
-    background: var(--navy-900);
-    border-radius: 50%;
-    transition: opacity 200ms var(--ease-out), width 240ms var(--ease-out), height 240ms var(--ease-out);
-  }
-  .cursor-ring {
-    width: 32px; height: 32px;
-    border: 1.5px solid rgba(15, 31, 61, 0.35);
-    border-radius: 50%;
-    transition: width 280ms var(--ease-out),
-                height 280ms var(--ease-out),
-                border-color 200ms var(--ease-out),
-                background 200ms var(--ease-out),
-                opacity 200ms var(--ease-out);
-  }
-  body.cursor-link .cursor-ring {
-    width: 44px; height: 44px;
-    background: rgba(37, 99, 235, 0.10);
-    border-color: rgba(37, 99, 235, 0.40);
-  }
-  body.cursor-link .cursor-dot { opacity: 0; }
-  body.cursor-text .cursor-ring {
-    width: 4px; height: 22px; border-radius: 2px;
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-  body.cursor-text .cursor-dot { opacity: 0; }
-
-  @media (max-width: 900px), (hover: none) {
-    .cursor-dot, .cursor-ring { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cursor-dot, .cursor-ring { display: none; }
+    opacity: 0; transform: translate3d(-16px, 0, 0);
+    animation: slideInLeft 500ms var(--ease-out) both;
   }
 
   /* Magnetic button base */
-  .btn-magnetic { will-change: transform; transition: transform 320ms var(--ease-out), background 140ms var(--ease-out); }
+  .btn-magnetic { will-change: transform; transition: transform 400ms var(--ease-out), background 200ms var(--ease-out); }
 
   /* ---------- Top bar ---------- */
   .topbar {
@@ -183,7 +133,17 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 var(--space-6);
     box-shadow: var(--shadow);
+    overflow: hidden;
   }
+  .topbar::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .topbar > * { position: relative; z-index: 1; }
   .brand {
     display: flex; align-items: center; gap: var(--space-3);
     font-weight: 700; letter-spacing: -0.01em;
@@ -242,6 +202,11 @@
     user-select: none;
   }
   .nav-item:hover { background: var(--navy-50); }
+  .nav-item:focus-visible {
+    outline: none;
+    background: var(--navy-50);
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
   .nav-item.active {
     background: var(--navy-100);
     color: var(--navy-800);
@@ -251,20 +216,21 @@
   .nav-divider { height: 1px; background: var(--border-soft); margin: var(--space-4) 0; }
 
   .main {
-    padding: var(--space-6) var(--space-8);
+    padding: var(--space-8) var(--space-10);
     max-width: 100%;
     overflow-x: hidden;
   }
   .page-header {
     display: flex; align-items: flex-end; justify-content: space-between;
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-8);
     flex-wrap: wrap; gap: var(--space-4);
   }
   .page-title {
-    font-size: 30px; font-weight: 500; color: var(--navy-900);
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 500; color: var(--navy-900);
     letter-spacing: -0.025em;
     margin: 0; text-wrap: balance;
-    line-height: 1.15;
+    line-height: 1.05;
     font-family: var(--font-sans);
   }
   .page-title em {
@@ -287,17 +253,26 @@
     color: var(--text);
     font-size: 13px; font-weight: 500;
     cursor: pointer;
-    transition: background 140ms var(--ease-out),
-                border-color 140ms var(--ease-out);
+    transition: background 200ms var(--ease-out),
+                border-color 200ms var(--ease-out),
+                transform 100ms var(--ease-press),
+                box-shadow 200ms var(--ease-out);
     font-family: inherit;
     line-height: 1.4;
   }
   .btn:hover { background: var(--bg-soft); border-color: var(--border); }
-  .btn:active { transform: translateY(0.5px); }
+  .btn:active { transform: scale(0.97); }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--accent);
+  }
   .btn-primary {
     background: var(--navy-800); color: white; border-color: var(--navy-800);
   }
   .btn-primary:hover { background: var(--navy-700); border-color: var(--navy-700); }
+  .btn-primary:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3), 0 0 0 4px var(--navy-800);
+  }
   .btn-ghost { background: transparent; border-color: transparent; }
   .btn-ghost:hover { background: var(--bg-soft); }
   .btn-danger { color: var(--red); }
@@ -331,10 +306,10 @@
     font-size: 13px; color: var(--text-muted); font-weight: 500;
   }
   .kpi-value {
-    font-size: 28px; font-weight: 500; color: var(--navy-900);
+    font-size: 32px; font-weight: 500; color: var(--navy-900);
     margin-top: var(--space-2);
-    letter-spacing: -0.025em;
-    line-height: 1.15;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
     font-family: var(--font-sans);
   }
   .kpi-value em {
@@ -357,16 +332,16 @@
   }
   .search input {
     width: 100%;
-    padding: 8px 12px 8px 34px;
+    padding: 9px 12px 9px 34px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     background: white;
     font-size: 13px;
     color: var(--text);
-    transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+    transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
     font-family: inherit;
   }
-  .search input:focus {
+  .search input:focus, .search input:focus-visible {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
@@ -384,10 +359,14 @@
     font-size: 12px; font-weight: 500;
     cursor: pointer;
     color: var(--text);
-    transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out);
+    transition: background 200ms var(--ease-out), border-color 200ms var(--ease-out);
     user-select: none;
   }
   .chip:hover { background: var(--navy-50); }
+  .chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
   .chip.active {
     background: var(--navy-800); color: white; border-color: var(--navy-800);
   }
@@ -428,6 +407,11 @@
     transition: background 100ms var(--ease-out);
   }
   tbody tr:hover { background: var(--bg-soft); }
+  tbody tr:focus-visible {
+    outline: none;
+    background: var(--bg-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
   .row-strong { color: var(--navy-900); font-weight: 600; }
   .row-muted  { color: var(--text-muted); }
 
@@ -476,11 +460,11 @@
     box-shadow: var(--shadow-lg);
     max-width: 560px; width: 100%;
     max-height: 90vh; overflow: auto;
-    animation: modalIn 480ms cubic-bezier(0.22, 1.2, 0.36, 1);
+    animation: modalIn 460ms var(--ease-out);
   }
   @keyframes modalIn {
-    0%   { opacity: 0; transform: translateY(16px) scale(0.96); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translate3d(-24px, 0, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
   .modal-large { max-width: 760px; }
   .modal-header {
@@ -489,9 +473,9 @@
     border-bottom: 1px solid var(--border-soft);
   }
   .modal-title {
-    font-size: 22px; font-weight: 500; color: var(--navy-900);
-    margin: 0; letter-spacing: -0.02em;
-    line-height: 1.2;
+    font-size: 24px; font-weight: 500; color: var(--navy-900);
+    margin: 0; letter-spacing: -0.025em;
+    line-height: 1.05;
   }
   .modal-title em {
     font-family: var(--font-display);
@@ -525,7 +509,8 @@
     font-family: inherit;
     line-height: 1.4;
   }
-  .field input:focus, .field select:focus, .field textarea:focus {
+  .field input:focus, .field select:focus, .field textarea:focus,
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
@@ -539,7 +524,18 @@
     background: var(--navy-800);
     color: white;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    position: relative;
+    overflow: hidden;
   }
+  .c360-hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.5;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .c360-hero > * { position: relative; z-index: 1; }
   .c360-name {
     font-size: 26px; font-weight: 500; letter-spacing: -0.02em;
     line-height: 1.15;
@@ -635,10 +631,6 @@
 </head>
 <body class="intro">
 
-<!-- Custom cursor -->
-<div class="cursor-ring" id="cursor-ring"></div>
-<div class="cursor-dot" id="cursor-dot"></div>
-
 <!-- Demo banner -->
 <div class="demo-banner">
   <strong>Demo prototype</strong> · Northwind Traders CRM · Built by Team 3 for CIS 235
@@ -666,22 +658,22 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="nav-label">Workspace</div>
-    <div class="nav-item active" data-view="customers">
+    <div class="nav-item active" data-view="customers" tabindex="0" role="button">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Customers
     </div>
-    <div class="nav-item" data-view="orders">
+    <div class="nav-item" data-view="orders" tabindex="0" role="button">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       Orders
     </div>
-    <div class="nav-item" data-view="loyalty">
+    <div class="nav-item" data-view="loyalty" tabindex="0" role="button">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Loyalty Program
     </div>
 
     <div class="nav-divider"></div>
     <div class="nav-label">Help</div>
-    <div class="nav-item" id="reset-btn">
+    <div class="nav-item" id="reset-btn" tabindex="0" role="button">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
       Reset Demo Data
     </div>
@@ -874,7 +866,7 @@ function renderCustomers() {
         <input id="search" placeholder="Search customers..." value="${escapeAttr(searchQuery)}" />
       </div>
       <div class="filter-chips" id="country-chips">
-        ${countries.map(c => `<div class="chip ${c === countryFilter ? 'active' : ''}" data-country="${c}">${c === 'all' ? 'All Countries' : c}</div>`).join('')}
+        ${countries.map(c => `<div class="chip ${c === countryFilter ? 'active' : ''}" data-country="${c}" tabindex="0" role="button" aria-pressed="${c === countryFilter}">${c === 'all' ? 'All Countries' : c}</div>`).join('')}
       </div>
       <div class="toolbar-right text-muted" style="font-size:12px;">${rows.length} of ${total}</div>
     </div>
@@ -899,7 +891,7 @@ function renderCustomers() {
           </thead>
           <tbody>
             ${rows.map((c, idx) => `
-              <tr data-customer="${c.id}" class="${freshIds.has(c.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
+              <tr data-customer="${c.id}" tabindex="0" role="button" aria-label="View ${escapeAttr(c.name)} details" class="${freshIds.has(c.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
                 <td class="num row-muted">${c.id}</td>
                 <td class="row-strong">${escapeHtml(c.name)}</td>
                 <td>${escapeHtml(c.contact)}<div class="row-muted" style="font-size:12px;">${escapeHtml(c.email)}</div></td>
@@ -918,11 +910,24 @@ function renderCustomers() {
   $('#search').addEventListener('input', (e) => { searchQuery = e.target.value; render(); $('#search').focus(); });
   document.querySelectorAll('#country-chips .chip').forEach(el => {
     el.addEventListener('click', () => { countryFilter = el.dataset.country; render(); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        countryFilter = el.dataset.country;
+        render();
+      }
+    });
   });
   $('#add-customer-btn').addEventListener('click', openAddCustomer);
   $('#export-btn').addEventListener('click', () => toast('Export queued (demo only)'));
   document.querySelectorAll('tr[data-customer]').forEach(tr => {
     tr.addEventListener('click', () => openCustomer360(tr.dataset.customer));
+    tr.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openCustomer360(tr.dataset.customer);
+      }
+    });
   });
 
   // Clear fresh markers after one render so the green flash only happens once
@@ -961,7 +966,7 @@ function renderOrders() {
           ${orders.map((o, idx) => {
             const c = customerById(o.customerId);
             return `
-              <tr data-customer="${o.customerId}" class="${freshIds.has(o.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
+              <tr data-customer="${o.customerId}" tabindex="0" role="button" aria-label="View ${c ? escapeAttr(c.name) : 'customer'} details" class="${freshIds.has(o.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
                 <td class="num row-muted">${o.id}</td>
                 <td class="num">${o.date}</td>
                 <td class="row-strong">${c ? escapeHtml(c.name) : 'Unknown'}</td>
@@ -979,6 +984,12 @@ function renderOrders() {
   $('#new-order-btn').addEventListener('click', openNewOrder);
   document.querySelectorAll('tr[data-customer]').forEach(tr => {
     tr.addEventListener('click', () => openCustomer360(tr.dataset.customer));
+    tr.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openCustomer360(tr.dataset.customer);
+      }
+    });
   });
   setTimeout(() => { if (freshIds.size) { freshIds.clear(); } }, 1500);
 }
@@ -1261,7 +1272,10 @@ function attachMagnetic() {
   document.querySelectorAll('.btn-magnetic').forEach(btn => {
     if (btn.dataset.magnetized) return;
     btn.dataset.magnetized = '1';
-    const STRENGTH = 0.18; // how much the button moves toward the cursor
+    const STRENGTH = 0.3; // matches skill component recipe
+
+    // Don't attach magnetic on touch devices
+    if (matchMedia('(hover: none)').matches) return;
 
     btn.addEventListener('mousemove', (e) => {
       const r = btn.getBoundingClientRect();
@@ -1276,107 +1290,50 @@ function attachMagnetic() {
 }
 
 /* ============================================================
-   Custom cursor — soft ring + dot, follows with spring
-   ============================================================ */
-(function setupCursor() {
-  const ring = document.getElementById('cursor-ring');
-  const dot  = document.getElementById('cursor-dot');
-  if (!ring || !dot) return;
-  // Bail on touch / no-hover devices
-  if (!matchMedia('(hover: hover)').matches) {
-    ring.style.display = 'none'; dot.style.display = 'none';
-    return;
-  }
-
-  let targetX = window.innerWidth / 2, targetY = window.innerHeight / 2;
-  let ringX = targetX, ringY = targetY;
-  let dotX = targetX, dotY = targetY;
-
-  document.addEventListener('mousemove', (e) => {
-    targetX = e.clientX;
-    targetY = e.clientY;
-  });
-
-  function tick() {
-    // Spring lerp — dot follows almost instantly, ring trails
-    dotX += (targetX - dotX) * 0.95;
-    dotY += (targetY - dotY) * 0.95;
-    ringX += (targetX - ringX) * 0.18;
-    ringY += (targetY - ringY) * 0.18;
-    dot.style.transform  = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
-    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-    requestAnimationFrame(tick);
-  }
-  tick();
-
-  // Hover detection — adapt cursor based on element under it
-  document.addEventListener('mouseover', (e) => {
-    const t = e.target;
-    document.body.classList.remove('cursor-link', 'cursor-text');
-    if (t.closest('button, a, [data-customer], .chip, .nav-item, [role="button"]')) {
-      document.body.classList.add('cursor-link');
-    } else if (t.closest('input, textarea, [contenteditable="true"]')) {
-      document.body.classList.add('cursor-text');
-    }
-  });
-
-  // Hide native cursor only on devices that have one
-  document.documentElement.style.cursor = 'none';
-  // But re-enable on inputs so users can see what they're doing
-  const inputStyle = document.createElement('style');
-  inputStyle.textContent = `
-    input, textarea, select, [contenteditable="true"] { cursor: text !important; }
-    button, a, .chip, .nav-item, [data-customer], [role="button"] { cursor: pointer !important; }
-  `;
-  document.head.appendChild(inputStyle);
-})();
-
-/* ============================================================
-   Lenis-style smooth scroll (lightweight, vanilla)
+   Lenis smooth scroll (from CDN, per skill spec)
    ============================================================ */
 (function setupSmoothScroll() {
-  // Bail on reduced-motion
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  let currentY = window.scrollY;
-  let targetY = currentY;
-  let isAnimating = false;
-
-  function raf() {
-    const diff = targetY - currentY;
-    if (Math.abs(diff) > 0.4) {
-      currentY += diff * 0.12;
-      window.scrollTo(0, currentY);
-      requestAnimationFrame(raf);
-    } else {
-      window.scrollTo(0, targetY);
-      currentY = targetY;
-      isAnimating = false;
-    }
-  }
-
-  window.addEventListener('wheel', (e) => {
-    // Don't intercept inside scrollable elements (e.g., modal body)
-    if (e.target.closest('.modal-body, .modal')) return;
-    e.preventDefault();
-    targetY = Math.max(0, Math.min(
-      document.documentElement.scrollHeight - window.innerHeight,
-      targetY + e.deltaY
-    ));
-    if (!isAnimating) {
-      isAnimating = true;
-      currentY = window.scrollY;
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.42/bundled/lenis.min.js';
+  script.onload = () => {
+    const lenis = new window.Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+    });
+    function raf(time) {
+      lenis.raf(time);
       requestAnimationFrame(raf);
     }
-  }, { passive: false });
+    requestAnimationFrame(raf);
+  };
+  document.head.appendChild(script);
 })();
 
 document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(el => {
   el.addEventListener('click', () => { view = el.dataset.view; render(); });
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      view = el.dataset.view;
+      render();
+    }
+  });
 });
 $('#reset-btn').addEventListener('click', () => {
   if (confirm('Reset to seed data? This will replace all current customers and orders.')) {
     resetState();
+  }
+});
+$('#reset-btn').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if (confirm('Reset to seed data? This will replace all current customers and orders.')) {
+      resetState();
+    }
   }
 });
 
