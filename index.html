@@ -216,45 +216,89 @@
     color: var(--text-muted); font-size: 0.875rem; letter-spacing: 0.04em;
   }
 
-  /* Process scroll-pinned */
-  .process { position: relative; background: var(--bg); padding: clamp(4rem, 8vw, 6rem) 0 0; }
-  .process-header { text-align: center; margin-bottom: clamp(3rem, 6vw, 5rem); }
+  /* Process — Neon Trail */
+  --accent-bright: #7bb0ff;
+  .process { background: var(--bg); position: relative; overflow: hidden; }
+  .process-intro { padding: clamp(6rem, 12vw, 10rem) 0 clamp(3rem, 5vw, 4rem); text-align: center; }
   .process-eyebrow { color: var(--accent); margin-bottom: 1rem; }
   .process-title { color: var(--text-strong); text-wrap: balance; margin: 0 auto; max-width: 18ch; }
-  .process-pin { position: relative; height: 500vh; }
-  .process-sticky {
-    position: sticky; top: 0; height: 100vh;
-    display: grid; place-items: center; overflow: hidden;
+
+  .process-grid-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgba(79, 142, 247, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(79, 142, 247, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent 90%);
   }
-  .process-step {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    opacity: 0; transform: translate3d(40px, 0, 0);
-    transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
-    pointer-events: none;
-    padding: 0 1.5rem;
+
+  .trail-stage { position: relative; max-width: 1240px; margin: 0 auto; padding: 2rem clamp(1.5rem, 4vw, 3rem) 6rem; }
+  .trail-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+  .trail-path-bg { fill: none; stroke: rgba(79, 142, 247, 0.14); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .trail-path-fg {
+    fill: none; stroke: #7bb0ff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px rgba(123, 176, 255, 0.7)) drop-shadow(0 0 14px rgba(79, 142, 247, 0.45));
   }
-  .process-step.active { opacity: 1; transform: translate3d(0, 0, 0); pointer-events: auto; }
-  .process-step-inner { max-width: 760px; text-align: center; }
-  .process-step-num {
+  .trail-ball-glow { fill: rgba(123, 176, 255, 0.25); filter: blur(8px); }
+  .trail-ball-mid  { fill: rgba(123, 176, 255, 0.6); filter: blur(2px); }
+  .trail-ball-core { fill: #ffffff; filter: drop-shadow(0 0 6px #7bb0ff) drop-shadow(0 0 14px var(--accent)); }
+
+  .trail-rows { position: relative; z-index: 2; display: flex; flex-direction: column; gap: clamp(2.5rem, 6vw, 5rem); }
+  .trail-row { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(2rem, 6vw, 5rem); min-height: 320px; }
+
+  .trail-card {
+    background: var(--navy-900); border: 1px solid var(--border-strong); border-radius: 16px;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+    transition: border-color 500ms var(--ease-out), box-shadow 500ms var(--ease-out), transform 500ms var(--ease-out), background 500ms var(--ease-out);
+    position: relative;
+  }
+  .trail-card.lit {
+    border-color: rgba(123, 176, 255, 0.55);
+    background: linear-gradient(155deg, rgba(31, 58, 107, 0.55) 0%, var(--navy-800) 65%, var(--navy-900) 100%);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(79, 142, 247, 0.35), 0 0 36px -6px rgba(79, 142, 247, 0.45);
+    transform: translateY(-2px);
+  }
+  .trail-card-step { color: var(--text-muted); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; margin-bottom: 0.875rem; transition: color 400ms var(--ease-out); }
+  .trail-card.lit .trail-card-step { color: #7bb0ff; }
+  .trail-card-title { color: var(--text-strong); font-size: clamp(1.5rem, 2.6vw, 2.125rem); line-height: 1.1; letter-spacing: -0.02em; font-weight: 500; margin: 0 0 0.875rem; text-wrap: balance; max-width: 18ch; }
+  .trail-card-body { color: var(--text-muted); font-size: 1rem; line-height: 1.6; margin: 0 0 1.25rem; max-width: 38ch; }
+  .trail-card-foot { display: flex; align-items: center; gap: 0.625rem; color: var(--text-muted); font-size: 0.8125rem; letter-spacing: 0.04em; }
+  .trail-card-foot-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); transition: box-shadow 400ms var(--ease-out); }
+  .trail-card.lit .trail-card-foot-dot { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 10px var(--accent); }
+
+  .trail-numeral { position: relative; display: flex; align-items: center; justify-content: center; min-height: 180px; padding: 0 clamp(1rem, 4vw, 3rem); }
+  .trail-numeral-text {
     font-family: var(--font-display); font-style: italic;
-    font-size: clamp(4rem, 12vw, 9rem); line-height: 1;
-    color: var(--accent); margin-bottom: clamp(1rem, 2vw, 2rem);
-    display: block;
+    font-size: clamp(7rem, 14vw, 13rem); line-height: 0.85; letter-spacing: -0.04em;
+    color: rgba(79, 142, 247, 0.18);
+    transition: color 600ms var(--ease-out), text-shadow 600ms var(--ease-out), transform 600ms var(--ease-out);
+    transform: translate3d(0, 8px, 0);
   }
-  .process-step-title { color: var(--text-strong); margin: 0 0 1.5rem; text-wrap: balance; }
-  .process-step-body { color: var(--text-muted); margin: 0 auto; max-width: 36ch; }
-  .process-progress {
-    position: absolute; bottom: 4rem; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 0.5rem; z-index: 5;
+  .trail-row.lit .trail-numeral-text {
+    color: #7bb0ff;
+    text-shadow: 0 0 24px rgba(79, 142, 247, 0.6), 0 0 48px rgba(79, 142, 247, 0.35);
+    transform: translate3d(0, 0, 0);
   }
-  .progress-dot {
-    width: 24px; height: 2px;
-    background: rgba(255, 255, 255, 0.18);
-    transition: background 400ms var(--ease-out), width 400ms var(--ease-out);
+  .trail-row.right .trail-card { order: 2; }
+  .trail-row.right .trail-numeral { order: 1; }
+
+  .trail-end { margin-top: clamp(2rem, 5vw, 4rem); text-align: center; color: var(--text-muted); font-size: 0.875rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; position: relative; z-index: 2; opacity: 0.5; transition: opacity 600ms var(--ease-out), color 600ms var(--ease-out); }
+  .trail-end.lit { opacity: 1; color: #7bb0ff; text-shadow: 0 0 16px rgba(79, 142, 247, 0.5); }
+  .trail-end-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 0.75rem; vertical-align: middle; box-shadow: 0 0 0 4px var(--accent-soft); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 12px var(--accent); }
+    50%      { box-shadow: 0 0 0 8px transparent, 0 0 18px var(--accent); }
   }
-  .progress-dot.active { background: var(--accent); width: 40px; }
-  .progress-dot.done   { background: rgba(79, 142, 247, 0.5); }
+
+  @media (max-width: 880px) {
+    .trail-row { grid-template-columns: 1fr; min-height: 0; gap: 0.5rem; }
+    .trail-row.right .trail-card { order: 0; }
+    .trail-row.right .trail-numeral { order: 0; }
+    .trail-numeral { min-height: 0; padding: 0.5rem 0 0; }
+    .trail-numeral-text { font-size: 5rem; }
+  }
 
   /* Stats */
   .stats {
@@ -395,8 +439,10 @@
 </section>
 
 <section class="process" id="process">
-  <div class="container">
-    <div class="process-header">
+  <div class="process-grid-bg"></div>
+
+  <div class="process-intro">
+    <div class="container">
       <div class="process-eyebrow text-eyebrow reveal">The flow</div>
       <h2 class="process-title text-display reveal reveal-stagger-1">
         Five steps. <em class="serif">One</em> record.
@@ -404,62 +450,70 @@
     </div>
   </div>
 
-  <div class="process-pin">
-    <div class="process-sticky">
-      <div class="process-step active" data-step="1">
-        <div class="process-step-inner">
-          <span class="process-step-num">01</span>
-          <h3 class="process-step-title text-h2">Customer intake</h3>
-          <p class="process-step-body text-body-lg">
-            Sales rep creates one unified profile. No spreadsheet. No retyping.
-          </p>
-        </div>
-      </div>
-      <div class="process-step" data-step="2">
-        <div class="process-step-inner">
-          <span class="process-step-num">02</span>
-          <h3 class="process-step-title text-h2">Profile created</h3>
-          <p class="process-step-body text-body-lg">
-            The record is linked across Sales, Marketing, and Service in the same instant.
-          </p>
-        </div>
-      </div>
-      <div class="process-step" data-step="3">
-        <div class="process-step-inner">
-          <span class="process-step-num">03</span>
-          <h3 class="process-step-title text-h2">Order placed</h3>
-          <p class="process-step-body text-body-lg">
-            Every order ties back to the profile &mdash; visible to anyone who opens it.
-          </p>
-        </div>
-      </div>
-      <div class="process-step" data-step="4">
-        <div class="process-step-inner">
-          <span class="process-step-num">04</span>
-          <h3 class="process-step-title text-h2">Loyalty recalculated</h3>
-          <p class="process-step-body text-body-lg">
-            Tier auto-updates from lifetime value. No reconciliation, no quarterly cleanup.
-          </p>
-        </div>
-      </div>
-      <div class="process-step" data-step="5">
-        <div class="process-step-inner">
-          <span class="process-step-num">05</span>
-          <h3 class="process-step-title text-h2">Customer 360</h3>
-          <p class="process-step-body text-body-lg">
-            Every team sees the same record. The whole point of the system.
-          </p>
-        </div>
+  <div class="trail-stage" id="trail-stage">
+    <svg class="trail-svg" id="trail-svg" preserveAspectRatio="none" aria-hidden="true">
+      <path id="trail-path-bg" class="trail-path-bg" d="" />
+      <path id="trail-path-fg" class="trail-path-fg" d="" />
+      <g id="trail-ball" style="opacity: 0">
+        <circle class="trail-ball-glow" r="22"></circle>
+        <circle class="trail-ball-mid"  r="9"></circle>
+        <circle class="trail-ball-core" r="4"></circle>
+      </g>
+    </svg>
+
+    <div class="trail-rows" id="trail-rows">
+      <div class="trail-row left" data-step="0">
+        <article class="trail-card" data-card="0">
+          <div class="trail-card-step">Step 01 · Customer intake</div>
+          <h3 class="trail-card-title">A profile takes <em class="serif">thirty seconds</em>.</h3>
+          <p class="trail-card-body">Sales rep creates one unified profile. No spreadsheet hand-off, no retyping into a fourth tool.</p>
+          <div class="trail-card-foot"><span class="trail-card-foot-dot"></span> Replaces 4 tools used today</div>
+        </article>
+        <div class="trail-numeral"><div class="trail-numeral-text">01</div></div>
       </div>
 
-      <div class="process-progress" aria-hidden="true">
-        <div class="progress-dot active" data-dot="1"></div>
-        <div class="progress-dot" data-dot="2"></div>
-        <div class="progress-dot" data-dot="3"></div>
-        <div class="progress-dot" data-dot="4"></div>
-        <div class="progress-dot" data-dot="5"></div>
+      <div class="trail-row right" data-step="1">
+        <article class="trail-card" data-card="1">
+          <div class="trail-card-step">Step 02 · Profile created</div>
+          <h3 class="trail-card-title">Linked across teams the <em class="serif">same instant</em>.</h3>
+          <p class="trail-card-body">The record reaches Sales, Marketing, and Service the moment it's saved. No nightly sync, no cross-team delay.</p>
+          <div class="trail-card-foot"><span class="trail-card-foot-dot"></span> 3 systems, one source of truth</div>
+        </article>
+        <div class="trail-numeral"><div class="trail-numeral-text">02</div></div>
+      </div>
+
+      <div class="trail-row left" data-step="2">
+        <article class="trail-card" data-card="2">
+          <div class="trail-card-step">Step 03 · Order placed</div>
+          <h3 class="trail-card-title">Every order ties back to <em class="serif">one</em> profile.</h3>
+          <p class="trail-card-body">Anyone who opens the customer can see every order, every conversation, every ticket — together, on one screen.</p>
+          <div class="trail-card-foot"><span class="trail-card-foot-dot"></span> Shared visibility, instantly</div>
+        </article>
+        <div class="trail-numeral"><div class="trail-numeral-text">03</div></div>
+      </div>
+
+      <div class="trail-row right" data-step="3">
+        <article class="trail-card" data-card="3">
+          <div class="trail-card-step">Step 04 · Loyalty recalculated</div>
+          <h3 class="trail-card-title">Tier updates <em class="serif">automatically</em>.</h3>
+          <p class="trail-card-body">No reconciliation, no quarterly clean-up. The customer's tier reflects what they've actually spent — the moment it changes.</p>
+          <div class="trail-card-foot"><span class="trail-card-foot-dot"></span> Zero manual reconciliation</div>
+        </article>
+        <div class="trail-numeral"><div class="trail-numeral-text">04</div></div>
+      </div>
+
+      <div class="trail-row left" data-step="4">
+        <article class="trail-card" data-card="4">
+          <div class="trail-card-step">Step 05 · Customer 360</div>
+          <h3 class="trail-card-title">Every team sees the <em class="serif">same</em> record.</h3>
+          <p class="trail-card-body">That's the whole point of the system. One customer, one profile, every team aligned around the same truth.</p>
+          <div class="trail-card-foot"><span class="trail-card-foot-dot"></span> The whole point</div>
+        </article>
+        <div class="trail-numeral"><div class="trail-numeral-text">05</div></div>
       </div>
     </div>
+
+    <div class="trail-end" id="trail-end"><span class="trail-end-dot"></span>End of the flow</div>
   </div>
 </section>
 
@@ -615,28 +669,154 @@
   });
 })();
 
-// 5. Scroll-pinned process
+// 5. Neon trail process
 (function () {
-  const pin = document.querySelector('.process-pin');
-  const steps = document.querySelectorAll('.process-step');
-  const dots  = document.querySelectorAll('.progress-dot');
-  if (!pin || !steps.length) return;
-  const TOTAL = steps.length;
-  const onScroll = () => {
-    const r = pin.getBoundingClientRect();
-    const total = pin.offsetHeight - window.innerHeight;
-    if (total <= 0) return;
-    const p = Math.max(0, Math.min(1, -r.top / total));
-    const idx = Math.min(TOTAL - 1, Math.floor(p * TOTAL));
-    steps.forEach((el, i) => el.classList.toggle('active', i === idx));
-    dots.forEach((d, i) => {
-      d.classList.toggle('active', i === idx);
-      d.classList.toggle('done', i < idx);
+  const stage   = document.getElementById('trail-stage');
+  const svg     = document.getElementById('trail-svg');
+  const pathBg  = document.getElementById('trail-path-bg');
+  const pathFg  = document.getElementById('trail-path-fg');
+  const ball    = document.getElementById('trail-ball');
+  const rows    = Array.from(document.querySelectorAll('.trail-row'));
+  const cards   = rows.map(r => r.querySelector('.trail-card'));
+  const endCap  = document.getElementById('trail-end');
+  if (!stage || !svg || !pathBg || !pathFg || !ball) return;
+
+  let pathLength = 0;
+  let nodeMarks = [];
+
+  function buildPath() {
+    const stageRect = stage.getBoundingClientRect();
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+
+    function rectOf(el) {
+      const r = el.getBoundingClientRect();
+      return { left: r.left - stageRect.left, right: r.right - stageRect.left, top: r.top - stageRect.top, bottom: r.bottom - stageRect.top };
+    }
+
+    const cardRects = cards.map(rectOf);
+
+    const anchors = cards.map((_, i) => {
+      const r = cardRects[i];
+      const isLeftCard = rows[i].classList.contains('left');
+      const x = isLeftCard ? r.right - 12 : r.left + 12;
+      const y = (r.top + r.bottom) / 2;
+      return { x, y, cardIdx: i };
     });
-  };
+
+    const startY = Math.max(0, cardRects[0].top - 64);
+    const startX = W / 2;
+    const endY   = Math.min(H - 24, cardRects[cardRects.length - 1].bottom + 80);
+    const endX   = W / 2;
+
+    let d = `M ${startX} ${startY}`;
+    let prev = { x: startX, y: startY };
+    const allPts = [...anchors.map(a => ({ x: a.x, y: a.y })), { x: endX, y: endY }];
+    for (let i = 0; i < allPts.length; i++) {
+      const next = allPts[i];
+      const span = next.y - prev.y;
+      const slack = Math.max(60, span * 0.55);
+      const c1 = { x: prev.x, y: prev.y + slack };
+      const c2 = { x: next.x, y: next.y - slack };
+      d += ` C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${next.x} ${next.y}`;
+      prev = next;
+    }
+
+    pathBg.setAttribute('d', d);
+    pathFg.setAttribute('d', d);
+
+    pathLength = pathFg.getTotalLength();
+    pathFg.style.strokeDasharray  = `${pathLength}`;
+    pathFg.style.strokeDashoffset = `${pathLength}`;
+
+    nodeMarks = anchors.map(a => ({ cardIdx: a.cardIdx, target: { x: a.x, y: a.y } }));
+    nodeMarks.push({ endIdx: true, target: { x: endX, y: endY } });
+    nodeMarks.forEach(m => { m.s = arcLengthAt(pathFg, m.target); });
+  }
+
+  function arcLengthAt(path, target) {
+    const STEPS = 220;
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i <= STEPS; i++) {
+      const s = (i / STEPS) * pathLength;
+      const p = path.getPointAtLength(s);
+      const dx = p.x - target.x, dy = p.y - target.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestD) { bestD = d2; best = s; }
+    }
+    return best;
+  }
+
+  let raw = 0, smooth = 0, raf = null;
+
+  function calcProgress() {
+    const r = stage.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const centerInStage = (vh / 2) - r.top;
+    if (pathLength <= 0) return 0;
+    if (centerInStage < 0) return 0;
+    if (centerInStage > stage.clientHeight) return 1;
+
+    const STEPS = 160;
+    let bestS = 0, bestD = Infinity;
+    for (let i = 0; i <= STEPS; i++) {
+      const s = (i / STEPS) * pathLength;
+      const p = pathFg.getPointAtLength(s);
+      const dy = p.y - centerInStage;
+      const d2 = dy * dy;
+      if (d2 < bestD) { bestD = d2; bestS = s; }
+    }
+    return Math.max(0, Math.min(1, bestS / pathLength));
+  }
+
+  function tick() {
+    smooth += (raw - smooth) * 0.18;
+    const s = smooth * pathLength;
+    pathFg.style.strokeDashoffset = `${pathLength - s}`;
+    if (s > 0) {
+      const p = pathFg.getPointAtLength(s);
+      ball.setAttribute('transform', `translate(${p.x} ${p.y})`);
+      ball.style.opacity = '1';
+    } else {
+      ball.style.opacity = '0';
+    }
+    nodeMarks.forEach(m => {
+      const reached = s >= m.s - 4;
+      if (m.endIdx) {
+        endCap.classList.toggle('lit', reached);
+      } else {
+        rows[m.cardIdx].classList.toggle('lit', reached);
+        cards[m.cardIdx].classList.toggle('lit', reached);
+      }
+    });
+    if (Math.abs(raw - smooth) > 0.0005) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      raf = null;
+    }
+  }
+
+  function onScroll() {
+    raw = calcProgress();
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  function rebuildAndRefresh() {
+    buildPath();
+    onScroll();
+    smooth = raw;
+    tick();
+  }
+
+  requestAnimationFrame(() => requestAnimationFrame(rebuildAndRefresh));
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(rebuildAndRefresh);
+  }
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  onScroll();
+  window.addEventListener('resize', rebuildAndRefresh);
 })();
 
 // 6. WebGL gradient mesh hero
