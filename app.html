@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Northwind CRM — Team 3 Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --navy-900: #0f1f3d;
+    --navy-800: #1f3a6b;
+    --navy-700: #2e4a8c;
+    --navy-100: #e6ecf7;
+    --navy-50:  #f4f6fb;
+    --accent:   #2563eb;
+    --accent-soft: #dbeafe;
+    --green:    #15803d;
+    --green-soft: #dcfce7;
+    --amber:    #b45309;
+    --amber-soft: #fef3c7;
+    --red:      #b91c1c;
+    --red-soft: #fee2e2;
+    --text:     #111827;
+    --text-muted: #6b7280;
+    --border:   #d5dcea;
+    --border-soft: #e5eaf2;
+    --bg:       #ffffff;
+    --bg-soft:  #f6f8fb;
+
+    --radius-sm: 6px;
+    --radius:    8px;
+    --radius-lg: 12px;
+
+    /* Single, consistent shadow language */
+    --shadow-sm: 0 1px 2px rgba(15, 31, 61, 0.06);
+    --shadow:    0 1px 3px rgba(15, 31, 61, 0.08);
+    --shadow-lg: 0 8px 24px rgba(15, 31, 61, 0.12);
+
+    /* 4px-based spacing scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+
+    --ease-out: cubic-bezier(0.65, 0, 0.35, 1);  /* The Awwwards staple — primary signature curve */
+    --ease-in:  cubic-bezier(0.65, 0, 0.35, 1);  /* Same curve, used for symmetry */
+    --ease-press: cubic-bezier(0.2, 0, 0, 1);    /* Snappy material curve — button presses only */
+
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-display: "Instrument Serif", Georgia, serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--text);
+    background: var(--bg-soft);
+    font-size: 15px;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ============================================================
+     Signature motion idiom: Linear-style horizontal slide reveals
+     One curve: cubic-bezier(0.65, 0, 0.35, 1) — the Awwwards staple
+     One direction: slide from left + fade
+     One stagger: 60ms between siblings
+     ============================================================ */
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translate3d(-24px, 0, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes slideInDown {
+    from { opacity: 0; transform: translate3d(0, -8px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+
+  /* Initial cinematic mount — same idiom, applied to chrome */
+  body.intro .topbar      { animation: slideInDown 600ms var(--ease-out) both; }
+  body.intro .demo-banner { animation: slideInDown 500ms var(--ease-out) both; }
+  body.intro .sidebar     { animation: slideInLeft 700ms var(--ease-out) both; animation-delay: 100ms; }
+  body.intro .main        { animation: slideInLeft 700ms var(--ease-out) both; animation-delay: 180ms; }
+
+  /* Page-level reveals on view switch — same slide-in-left idiom */
+  .reveal { opacity: 0; transform: translate3d(-24px, 0, 0); }
+  .reveal.in {
+    opacity: 1; transform: translate3d(0, 0, 0);
+    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+  }
+  .reveal-stagger-1.in { transition-delay: 60ms; }
+  .reveal-stagger-2.in { transition-delay: 120ms; }
+  .reveal-stagger-3.in { transition-delay: 180ms; }
+  .reveal-stagger-4.in { transition-delay: 240ms; }
+
+  /* Table rows use the same idiom */
+  tbody tr.reveal-row {
+    opacity: 0; transform: translate3d(-16px, 0, 0);
+    animation: slideInLeft 500ms var(--ease-out) both;
+  }
+
+  /* Magnetic button base */
+  .btn-magnetic { will-change: transform; transition: transform 400ms var(--ease-out), background 200ms var(--ease-out); }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--navy-900);
+    color: white;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 var(--space-6);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .topbar::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .topbar > * { position: relative; z-index: 1; }
+  .brand {
+    display: flex; align-items: center; gap: var(--space-3);
+    font-weight: 700; letter-spacing: -0.01em;
+  }
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--accent);
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 700; color: white;
+  }
+  .brand-name { font-size: 15px; }
+  .brand-sub  { font-size: 12px; color: rgba(255,255,255,0.65); margin-left: 6px; font-weight: 500; }
+
+  /* ---------- Layout ---------- */
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+  .sidebar {
+    background: white;
+    border-right: 1px solid var(--border-soft);
+    padding: var(--space-5) var(--space-3);
+  }
+  .nav-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-muted);
+    padding: 0 var(--space-3); margin-bottom: var(--space-2);
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: 8px var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--navy-50); }
+  .nav-item:focus-visible {
+    outline: none;
+    background: var(--navy-50);
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  .nav-item.active {
+    background: var(--navy-100);
+    color: var(--navy-800);
+    font-weight: 600;
+  }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-divider { height: 1px; background: var(--border-soft); margin: var(--space-4) 0; }
+
+  .main {
+    padding: var(--space-8) var(--space-10);
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: var(--space-8);
+    flex-wrap: wrap; gap: var(--space-4);
+  }
+  .page-title {
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 500; color: var(--navy-900);
+    letter-spacing: -0.025em;
+    margin: 0; text-wrap: balance;
+    line-height: 1.05;
+    font-family: var(--font-sans);
+  }
+  .page-title em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--navy-800);
+    letter-spacing: -0.01em;
+    font-size: 1.07em;
+  }
+  .page-subtitle { color: var(--text-muted); margin-top: 6px; font-size: 13px; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: background 200ms var(--ease-out),
+                border-color 200ms var(--ease-out),
+                transform 100ms var(--ease-press),
+                box-shadow 200ms var(--ease-out);
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .btn:hover { background: var(--bg-soft); border-color: var(--border); }
+  .btn:active { transform: scale(0.97); }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--accent);
+  }
+  .btn-primary {
+    background: var(--navy-800); color: white; border-color: var(--navy-800);
+  }
+  .btn-primary:hover { background: var(--navy-700); border-color: var(--navy-700); }
+  .btn-primary:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3), 0 0 0 4px var(--navy-800);
+  }
+  .btn-ghost { background: transparent; border-color: transparent; }
+  .btn-ghost:hover { background: var(--bg-soft); }
+  .btn-danger { color: var(--red); }
+  .btn-danger:hover { background: var(--red-soft); }
+  .btn-icon { padding: 6px; }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: white;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-pad { padding: var(--space-5); }
+
+  /* ---------- KPI grid ---------- */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+  @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .kpi {
+    background: white;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: var(--space-4) var(--space-5);
+  }
+  .kpi-label {
+    font-size: 13px; color: var(--text-muted); font-weight: 500;
+  }
+  .kpi-value {
+    font-size: 32px; font-weight: 500; color: var(--navy-900);
+    margin-top: var(--space-2);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    font-family: var(--font-sans);
+  }
+  .kpi-value em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+  }
+  .kpi-delta { font-size: 12px; margin-top: var(--space-2); font-weight: 500; }
+  .kpi-delta.up   { color: var(--green); }
+  .kpi-delta.down { color: var(--red); }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: flex; align-items: center; gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .search {
+    position: relative; flex: 1; min-width: 220px; max-width: 360px;
+  }
+  .search input {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 13px;
+    color: var(--text);
+    transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+    font-family: inherit;
+  }
+  .search input:focus, .search input:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: var(--text-muted); pointer-events: none;
+  }
+  .filter-chips { display: flex; gap: 6px; }
+  .chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid var(--border);
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 200ms var(--ease-out), border-color 200ms var(--ease-out);
+    user-select: none;
+  }
+  .chip:hover { background: var(--navy-50); }
+  .chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .chip.active {
+    background: var(--navy-800); color: white; border-color: var(--navy-800);
+  }
+  .toolbar-right { margin-left: auto; display: flex; gap: var(--space-2); }
+
+  /* ---------- Table ---------- */
+  .table-wrap {
+    background: white;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  thead th {
+    background: var(--bg-soft);
+    padding: 10px var(--space-4);
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-soft);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 14px var(--space-4);
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr {
+    cursor: pointer;
+    transition: background 100ms var(--ease-out);
+  }
+  tbody tr:hover { background: var(--bg-soft); }
+  tbody tr:focus-visible {
+    outline: none;
+    background: var(--bg-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .row-strong { color: var(--navy-900); font-weight: 600; }
+  .row-muted  { color: var(--text-muted); }
+
+  /* row enter animation */
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  tbody tr.fresh {
+    animation: rowIn 280ms var(--ease-out);
+    background: var(--green-soft);
+  }
+
+  /* ---------- Tier badge ---------- */
+  .tier {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .tier::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; display: block;
+  }
+  .tier-gold     { background: #fef3c7; color: #92400e; }
+  .tier-gold::before     { background: #f59e0b; }
+  .tier-silver   { background: #f1f5f9; color: #475569; }
+  .tier-silver::before   { background: #94a3b8; }
+  .tier-bronze   { background: #fed7aa; color: #9a3412; }
+  .tier-bronze::before   { background: #ea580c; }
+  .tier-new      { background: var(--accent-soft); color: var(--navy-800); }
+  .tier-new::before      { background: var(--accent); }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(15, 31, 61, 0.5);
+    display: grid; place-items: center;
+    padding: var(--space-4);
+    animation: backdropIn 180ms var(--ease-out);
+  }
+  @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 560px; width: 100%;
+    max-height: 90vh; overflow: auto;
+    animation: modalIn 460ms var(--ease-out);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translate3d(-24px, 0, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  .modal-large { max-width: 760px; }
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .modal-title {
+    font-size: 24px; font-weight: 500; color: var(--navy-900);
+    margin: 0; letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+  .modal-title em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  .modal-sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+  .modal-body { padding: var(--space-6); }
+  .modal-footer {
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--border-soft);
+    display: flex; justify-content: flex-end; gap: var(--space-2);
+    background: var(--bg-soft);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+
+  /* ---------- Forms ---------- */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+  .form-grid .full { grid-column: span 2; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .field input, .field select, .field textarea {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text);
+    background: white;
+    transition: border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus,
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .field-hint { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ---------- Customer 360 ---------- */
+  .c360 { padding: 0; }
+  .c360-hero {
+    padding: var(--space-6);
+    background: var(--navy-800);
+    color: white;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .c360-hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.5;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .c360-hero > * { position: relative; z-index: 1; }
+  .c360-name {
+    font-size: 26px; font-weight: 500; letter-spacing: -0.02em;
+    line-height: 1.15;
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+  .c360-meta { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 8px; }
+  .c360-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+  .c360-stat-label { color: rgba(255,255,255,0.65); font-size: 12px; font-weight: 500; }
+  .c360-stat-value { font-size: 18px; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; }
+  .c360-section {
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .c360-section:last-child { border-bottom: none; }
+  .c360-section h4 {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    margin: 0 0 var(--space-3);
+  }
+  .order-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border-soft);
+    font-size: 13px;
+  }
+  .order-row:last-child { border-bottom: none; }
+  .order-row .order-id { font-family: var(--font-num); color: var(--text-muted); font-size: 12px; }
+  .empty { color: var(--text-muted); font-size: 13px; font-style: italic; padding: var(--space-3) 0; }
+
+  /* ---------- Toast ---------- */
+  .toast-stack {
+    position: fixed; bottom: var(--space-6); right: var(--space-6);
+    z-index: 200;
+    display: flex; flex-direction: column; gap: var(--space-2);
+    pointer-events: none;
+  }
+  .toast {
+    background: white;
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--green);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 10px var(--space-4);
+    font-size: 13px;
+    display: flex; align-items: center; gap: var(--space-3);
+    animation: toastIn 320ms var(--ease-out);
+    max-width: 360px;
+    pointer-events: auto;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .toast.fadeout {
+    animation: toastOut 240ms var(--ease-in) forwards;
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateY(8px); }
+  }
+  .toast-icon {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--green-soft); color: var(--green);
+    display: grid; place-items: center; flex-shrink: 0;
+    font-weight: 700; font-size: 12px;
+  }
+
+  /* ---------- Demo banner ---------- */
+  .demo-banner {
+    background: var(--navy-50);
+    color: var(--text-muted);
+    padding: 6px var(--space-6);
+    font-size: 12px; font-weight: 500;
+    text-align: center;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .demo-banner strong { font-weight: 600; color: var(--navy-800); }
+
+  /* ---------- Misc ---------- */
+  .text-right { text-align: right; }
+  .text-muted { color: var(--text-muted); }
+  .empty-state {
+    padding: var(--space-10);
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state h3 { color: var(--navy-900); margin: 0 0 var(--space-2); font-weight: 600; }
+</style>
+</head>
+<body class="intro">
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  <a href="./" style="color: inherit; text-decoration: none; opacity: 0.75; margin-right: 12px;">← Back</a>
+  <strong>Demo prototype</strong> · Northwind Traders CRM · Built by Team 3 for CIS 235
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">N</div>
+    <div>
+      <span class="brand-name">Northwind Traders</span>
+      <span class="brand-sub">CRM</span>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="nav-label">Workspace</div>
+    <div class="nav-item active" data-view="customers" tabindex="0" role="button">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Customers
+    </div>
+    <div class="nav-item" data-view="orders" tabindex="0" role="button">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Orders
+    </div>
+    <div class="nav-item" data-view="loyalty" tabindex="0" role="button">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Loyalty Program
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-label">Help</div>
+    <div class="nav-item" id="reset-btn" tabindex="0" role="button">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Reset Demo Data
+    </div>
+  </aside>
+
+  <!-- Main view container -->
+  <main class="main" id="main"></main>
+</div>
+
+<!-- Modal mount point -->
+<div id="modal-mount"></div>
+
+<!-- Toast stack -->
+<div class="toast-stack" id="toast-stack"></div>
+
+<script>
+/* ============================================================
+   Northwind CRM Prototype — Single file, localStorage-backed
+   ============================================================ */
+
+const STORAGE_KEY = 'northwind-crm-v1';
+
+const SEED = {
+  customers: [
+    { id: 'C-1001', name: 'Alfreds Futterkiste',          contact: 'Maria Anders',     email: 'maria@alfredsf.de',     country: 'Germany', tier: 'gold',   joinDate: '2023-04-12' },
+    { id: 'C-1002', name: 'Berglunds snabbköp',           contact: 'Christina Berglund', email: 'cb@berglunds.se',    country: 'Sweden',  tier: 'silver', joinDate: '2023-08-03' },
+    { id: 'C-1003', name: 'Eastern Connection',           contact: 'Ann Devon',         email: 'ann@easternconn.uk',   country: 'UK',      tier: 'gold',   joinDate: '2022-11-20' },
+    { id: 'C-1004', name: 'Familia Arquibaldo',           contact: 'Aria Cruz',         email: 'aria@familia.br',      country: 'Brazil',  tier: 'silver', joinDate: '2024-01-15' },
+    { id: 'C-1005', name: 'Folies gourmandes',            contact: 'Martine Rancé',     email: 'mr@foliesg.fr',        country: 'France',  tier: 'bronze', joinDate: '2024-03-22' },
+    { id: 'C-1006', name: 'Lazy K Kountry Store',         contact: 'John Steel',        email: 'js@lazyk.us',          country: 'USA',     tier: 'silver', joinDate: '2023-09-07' },
+    { id: 'C-1007', name: 'Wartian Herkku',               contact: 'Pirkko Koskitalo',  email: 'pk@wartian.fi',        country: 'Finland', tier: 'bronze', joinDate: '2024-05-30' },
+  ],
+  orders: [
+    { id: 'O-50012', customerId: 'C-1001', date: '2026-04-18', items: 'Côte de Blaye × 4, Camembert × 12', total: 1280.00, status: 'Shipped' },
+    { id: 'O-50013', customerId: 'C-1003', date: '2026-04-22', items: 'Chai × 24, Chang × 18',             total: 642.50,  status: 'Shipped' },
+    { id: 'O-50014', customerId: 'C-1001', date: '2026-04-25', items: 'Aniseed Syrup × 36',                 total: 360.00,  status: 'Processing' },
+    { id: 'O-50015', customerId: 'C-1002', date: '2026-04-28', items: 'Tofu × 50, Konbu × 10',              total: 415.20,  status: 'Processing' },
+    { id: 'O-50016', customerId: 'C-1004', date: '2026-04-30', items: 'Guaraná Fantástica × 60',            total: 270.00,  status: 'Pending' },
+  ],
+};
+
+/* ---------- State ---------- */
+let state = loadState();
+let view = 'customers';
+let countryFilter = 'all';
+let searchQuery = '';
+let freshIds = new Set(); // for row entry animation
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return JSON.parse(JSON.stringify(SEED));
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+function resetState() {
+  state = JSON.parse(JSON.stringify(SEED));
+  saveState();
+  searchQuery = '';
+  countryFilter = 'all';
+  freshIds.clear();
+  render();
+  toast('Demo data reset');
+}
+
+/* ---------- Helpers ---------- */
+const $ = (sel) => document.querySelector(sel);
+const fmtMoney = (n) => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const tierLabel = (t) => ({ gold: 'Gold', silver: 'Silver', bronze: 'Bronze', new: 'New' }[t] || 'New');
+const tierClass = (t) => 'tier tier-' + t;
+
+function customerOrders(customerId) {
+  return state.orders
+    .filter(o => o.customerId === customerId)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+function customerLifetime(customerId) {
+  return customerOrders(customerId).reduce((s, o) => s + Number(o.total), 0);
+}
+function customerById(id) {
+  return state.customers.find(c => c.id === id);
+}
+
+/* ---------- Toast ---------- */
+function toast(message) {
+  const stack = $('#toast-stack');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = '<div class="toast-icon">✓</div><div>' + message + '</div>';
+  stack.appendChild(el);
+  setTimeout(() => { el.classList.add('fadeout'); }, 2400);
+  setTimeout(() => { el.remove(); }, 2700);
+}
+
+/* ---------- Modal ---------- */
+function openModal(html, opts) {
+  const mount = $('#modal-mount');
+  const cls = opts && opts.large ? 'modal modal-large' : 'modal';
+  mount.innerHTML = '<div class="modal-backdrop" id="backdrop"><div class="' + cls + '">' + html + '</div></div>';
+  $('#backdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'backdrop') closeModal();
+  });
+  document.addEventListener('keydown', escClose);
+}
+function closeModal() {
+  $('#modal-mount').innerHTML = '';
+  document.removeEventListener('keydown', escClose);
+}
+function escClose(e) { if (e.key === 'Escape') closeModal(); }
+
+/* ============================================================
+   Views
+   ============================================================ */
+
+function renderCustomers() {
+  const main = $('#main');
+
+  // KPIs
+  const total = state.customers.length;
+  const goldCount = state.customers.filter(c => c.tier === 'gold').length;
+  const monthRevenue = state.orders
+    .filter(o => o.date >= '2026-04-01')
+    .reduce((s, o) => s + Number(o.total), 0);
+  const avgOrder = state.orders.length ? monthRevenue / state.orders.length : 0;
+
+  // Filter
+  const countries = ['all', ...Array.from(new Set(state.customers.map(c => c.country))).sort()];
+  let rows = state.customers.slice();
+  if (countryFilter !== 'all') rows = rows.filter(c => c.country === countryFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    rows = rows.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.contact.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.country.toLowerCase().includes(q) ||
+      c.id.toLowerCase().includes(q)
+    );
+  }
+  // newest first by joinDate desc
+  rows.sort((a, b) => b.joinDate.localeCompare(a.joinDate));
+
+  main.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title reveal">Your <em>customers</em>, in one place</h1>
+        <div class="page-subtitle reveal reveal-stagger-1">One unified profile per customer · ${state.customers.length} total</div>
+      </div>
+      <div style="display:flex; gap:8px;" class="reveal reveal-stagger-2">
+        <button class="btn" id="export-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+        <button class="btn btn-primary btn-magnetic" id="add-customer-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Customer
+        </button>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi reveal reveal-stagger-1">
+        <div class="kpi-label">Total Customers</div>
+        <div class="kpi-value num">${total}</div>
+        <div class="kpi-delta up">▲ ${state.customers.filter(c => c.joinDate >= '2026-01-01').length} this year</div>
+      </div>
+      <div class="kpi reveal reveal-stagger-2">
+        <div class="kpi-label">Gold Tier</div>
+        <div class="kpi-value num">${goldCount}</div>
+        <div class="kpi-delta up">▲ Loyalty target on track</div>
+      </div>
+      <div class="kpi reveal reveal-stagger-3">
+        <div class="kpi-label">Revenue (Apr 2026)</div>
+        <div class="kpi-value num">${fmtMoney(monthRevenue)}</div>
+        <div class="kpi-delta up">▲ 12% vs prior month</div>
+      </div>
+      <div class="kpi reveal reveal-stagger-4">
+        <div class="kpi-label">Avg Order Value</div>
+        <div class="kpi-value num">${fmtMoney(avgOrder)}</div>
+        <div class="kpi-delta up">▲ Up from $498</div>
+      </div>
+    </div>
+
+    <div class="toolbar reveal reveal-stagger-2">
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search" placeholder="Search customers..." value="${escapeAttr(searchQuery)}" />
+      </div>
+      <div class="filter-chips" id="country-chips">
+        ${countries.map(c => `<div class="chip ${c === countryFilter ? 'active' : ''}" data-country="${c}" tabindex="0" role="button" aria-pressed="${c === countryFilter}">${c === 'all' ? 'All Countries' : c}</div>`).join('')}
+      </div>
+      <div class="toolbar-right text-muted" style="font-size:12px;">${rows.length} of ${total}</div>
+    </div>
+
+    ${rows.length === 0 ? `
+      <div class="card card-pad empty-state reveal reveal-stagger-3">
+        <h3>No customers match your filters</h3>
+        <p>Try clearing the search or selecting a different country.</p>
+      </div>
+    ` : `
+      <div class="table-wrap reveal reveal-stagger-3">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer ID</th>
+              <th>Company</th>
+              <th>Primary Contact</th>
+              <th>Country</th>
+              <th>Tier</th>
+              <th class="text-right">Lifetime Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((c, idx) => `
+              <tr data-customer="${c.id}" tabindex="0" role="button" aria-label="View ${escapeAttr(c.name)} details" class="${freshIds.has(c.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
+                <td class="num row-muted">${c.id}</td>
+                <td class="row-strong">${escapeHtml(c.name)}</td>
+                <td>${escapeHtml(c.contact)}<div class="row-muted" style="font-size:12px;">${escapeHtml(c.email)}</div></td>
+                <td>${escapeHtml(c.country)}</td>
+                <td><span class="${tierClass(c.tier)}">${tierLabel(c.tier)}</span></td>
+                <td class="text-right num row-strong">${fmtMoney(customerLifetime(c.id))}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `}
+  `;
+
+  // Wire up
+  $('#search').addEventListener('input', (e) => { searchQuery = e.target.value; render(); $('#search').focus(); });
+  document.querySelectorAll('#country-chips .chip').forEach(el => {
+    el.addEventListener('click', () => { countryFilter = el.dataset.country; render(); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        countryFilter = el.dataset.country;
+        render();
+      }
+    });
+  });
+  $('#add-customer-btn').addEventListener('click', openAddCustomer);
+  $('#export-btn').addEventListener('click', () => toast('Export queued (demo only)'));
+  document.querySelectorAll('tr[data-customer]').forEach(tr => {
+    tr.addEventListener('click', () => openCustomer360(tr.dataset.customer));
+    tr.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openCustomer360(tr.dataset.customer);
+      }
+    });
+  });
+
+  // Clear fresh markers after one render so the green flash only happens once
+  setTimeout(() => { if (freshIds.size) { freshIds.clear(); } }, 1500);
+}
+
+function renderOrders() {
+  const main = $('#main');
+  const orders = state.orders.slice().sort((a, b) => b.date.localeCompare(a.date));
+
+  main.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title reveal">Recent <em>orders</em></h1>
+        <div class="page-subtitle reveal reveal-stagger-1">All orders linked to a customer profile · ${orders.length} total</div>
+      </div>
+      <button class="btn btn-primary btn-magnetic reveal reveal-stagger-2" id="new-order-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Order
+      </button>
+    </div>
+
+    <div class="table-wrap reveal reveal-stagger-2">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Status</th>
+            <th class="text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${orders.map((o, idx) => {
+            const c = customerById(o.customerId);
+            return `
+              <tr data-customer="${o.customerId}" tabindex="0" role="button" aria-label="View ${c ? escapeAttr(c.name) : 'customer'} details" class="${freshIds.has(o.id) ? 'fresh' : 'reveal-row'}" style="animation-delay: ${280 + idx * 40}ms;">
+                <td class="num row-muted">${o.id}</td>
+                <td class="num">${o.date}</td>
+                <td class="row-strong">${c ? escapeHtml(c.name) : 'Unknown'}</td>
+                <td class="row-muted" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(o.items)}</td>
+                <td><span class="${o.status === 'Shipped' ? 'tier tier-gold' : o.status === 'Processing' ? 'tier tier-new' : 'tier tier-bronze'}">${o.status}</span></td>
+                <td class="text-right num row-strong">${fmtMoney(o.total)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  $('#new-order-btn').addEventListener('click', openNewOrder);
+  document.querySelectorAll('tr[data-customer]').forEach(tr => {
+    tr.addEventListener('click', () => openCustomer360(tr.dataset.customer));
+    tr.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openCustomer360(tr.dataset.customer);
+      }
+    });
+  });
+  setTimeout(() => { if (freshIds.size) { freshIds.clear(); } }, 1500);
+}
+
+function renderLoyalty() {
+  const main = $('#main');
+  const tiers = ['gold', 'silver', 'bronze', 'new'];
+  const counts = tiers.map(t => state.customers.filter(c => c.tier === t).length);
+  const total = state.customers.length;
+
+  main.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title reveal">The <em>loyalty</em> program</h1>
+        <div class="page-subtitle reveal reveal-stagger-1">Customers grouped by lifetime spend</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      ${tiers.map((t, i) => `
+        <div class="kpi reveal reveal-stagger-${i + 1}">
+          <div class="kpi-label">${tierLabel(t)} Tier</div>
+          <div class="kpi-value num">${counts[i]}</div>
+          <div class="kpi-delta">${total ? Math.round(counts[i]/total*100) : 0}% of customers</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card card-pad reveal reveal-stagger-3">
+      <h3 style="margin:0 0 12px; color:var(--navy-900); font-size:15px;">Tier Criteria</h3>
+      <table>
+        <thead>
+          <tr><th>Tier</th><th>Lifetime Value</th><th>Benefit</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tier tier-gold">Gold</span></td><td class="num">$50,000+</td><td>Volume discount, dedicated rep, priority shipping</td></tr>
+          <tr><td><span class="tier tier-silver">Silver</span></td><td class="num">$10,000 – $49,999</td><td>Quarterly business review, catalog previews</td></tr>
+          <tr><td><span class="tier tier-bronze">Bronze</span></td><td class="num">$2,000 – $9,999</td><td>Newsletter, promotional offers</td></tr>
+          <tr><td><span class="tier tier-new">New</span></td><td class="num">Under $2,000</td><td>Onboarding sequence, first-order incentive</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   Modals: Add Customer, New Order, Customer 360
+   ============================================================ */
+
+function openAddCustomer() {
+  openModal(`
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Add a new <em>customer</em></h2>
+        <div class="modal-sub">Creates one unified profile across Sales, Marketing, and Service</div>
+      </div>
+      <button class="btn btn-ghost btn-icon" id="cancel-add">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Company name *</label><input id="f-name" placeholder="e.g. Wolski Zajazd" /></div>
+        <div class="field"><label>Country *</label>
+          <select id="f-country">
+            ${['Germany','USA','UK','France','Sweden','Brazil','Finland','Canada','Italy','Spain','Mexico','Poland','Other'].map(c => `<option>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Primary contact *</label><input id="f-contact" placeholder="Full name" /></div>
+        <div class="field"><label>Email *</label><input id="f-email" type="email" placeholder="contact@company.com" /></div>
+        <div class="field full"><label>Initial loyalty tier</label>
+          <select id="f-tier">
+            <option value="new">New (default for first-time customers)</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Silver</option>
+            <option value="gold">Gold</option>
+          </select>
+          <div class="field-hint">Tier auto-recalculates based on lifetime value after orders are placed</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="cancel-add-2">Cancel</button>
+      <button class="btn btn-primary" id="save-customer">Create Customer</button>
+    </div>
+  `);
+
+  $('#cancel-add').addEventListener('click', closeModal);
+  $('#cancel-add-2').addEventListener('click', closeModal);
+  setTimeout(() => $('#f-name').focus(), 50);
+
+  $('#save-customer').addEventListener('click', () => {
+    const name = $('#f-name').value.trim();
+    const country = $('#f-country').value;
+    const contact = $('#f-contact').value.trim();
+    const email = $('#f-email').value.trim();
+    const tier = $('#f-tier').value;
+    if (!name || !contact || !email) {
+      toast('Please fill in all required fields');
+      return;
+    }
+    const id = 'C-' + (1000 + state.customers.length + Math.floor(Math.random() * 90 + 10));
+    const today = new Date().toISOString().slice(0, 10);
+    state.customers.unshift({ id, name, contact, email, country, tier, joinDate: today });
+    freshIds.add(id);
+    saveState();
+    closeModal();
+    view = 'customers';
+    render();
+    toast(`Customer ${name} added`);
+  });
+}
+
+function openNewOrder() {
+  openModal(`
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">New <em>order</em></h2>
+        <div class="modal-sub">Linked to a customer profile and visible in Customer 360</div>
+      </div>
+      <button class="btn btn-ghost btn-icon" id="cancel-add">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label>Customer *</label>
+          <select id="o-customer">
+            <option value="">— Select customer —</option>
+            ${state.customers.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${c.id})</option>`).join('')}
+          </select>
+        </div>
+        <div class="field full"><label>Items *</label><input id="o-items" placeholder="e.g. Côte de Blaye × 4, Camembert × 12" /></div>
+        <div class="field"><label>Total *</label><input id="o-total" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+        <div class="field"><label>Status</label>
+          <select id="o-status">
+            <option>Pending</option><option>Processing</option><option>Shipped</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="cancel-add-2">Cancel</button>
+      <button class="btn btn-primary" id="save-order">Create Order</button>
+    </div>
+  `);
+
+  $('#cancel-add').addEventListener('click', closeModal);
+  $('#cancel-add-2').addEventListener('click', closeModal);
+  setTimeout(() => $('#o-customer').focus(), 50);
+
+  $('#save-order').addEventListener('click', () => {
+    const customerId = $('#o-customer').value;
+    const items = $('#o-items').value.trim();
+    const total = parseFloat($('#o-total').value);
+    const status = $('#o-status').value;
+    if (!customerId || !items || isNaN(total) || total < 0) {
+      toast('Please complete all fields');
+      return;
+    }
+    const id = 'O-' + (50000 + state.orders.length + Math.floor(Math.random() * 900 + 100));
+    const today = new Date().toISOString().slice(0, 10);
+    state.orders.unshift({ id, customerId, date: today, items, total, status });
+    freshIds.add(id);
+    saveState();
+    closeModal();
+    view = 'orders';
+    render();
+    const c = customerById(customerId);
+    toast(`Order ${id} created for ${c ? c.name : 'customer'}`);
+  });
+}
+
+function openCustomer360(customerId) {
+  const c = customerById(customerId);
+  if (!c) return;
+  const orders = customerOrders(customerId);
+  const ltv = customerLifetime(customerId);
+
+  openModal(`
+    <div class="c360">
+      <div class="c360-hero">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div class="c360-name">${escapeHtml(c.name)}</div>
+            <div class="c360-meta">${escapeHtml(c.contact)} · ${escapeHtml(c.email)} · ${escapeHtml(c.country)}</div>
+          </div>
+          <span class="${tierClass(c.tier)}" style="background:rgba(255,255,255,0.18); color:white;">${tierLabel(c.tier)} Tier</span>
+        </div>
+        <div class="c360-stats">
+          <div>
+            <div class="c360-stat-label">Customer ID</div>
+            <div class="c360-stat-value num">${c.id}</div>
+          </div>
+          <div>
+            <div class="c360-stat-label">Lifetime Value</div>
+            <div class="c360-stat-value num">${fmtMoney(ltv)}</div>
+          </div>
+          <div>
+            <div class="c360-stat-label">Customer Since</div>
+            <div class="c360-stat-value num">${c.joinDate}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="c360-section">
+        <h4>Recent Orders</h4>
+        ${orders.length === 0 ? '<div class="empty">No orders on file yet.</div>' : orders.map(o => `
+          <div class="order-row">
+            <div>
+              <span class="order-id">${o.id}</span>
+              <span style="margin: 0 6px;">·</span>
+              <span class="num text-muted">${o.date}</span>
+              <div class="text-muted" style="font-size:12px; margin-top:2px;">${escapeHtml(o.items)}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="num row-strong">${fmtMoney(o.total)}</div>
+              <div class="text-muted" style="font-size:11px;">${o.status}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="c360-section">
+        <h4>Activity</h4>
+        <div class="text-muted" style="font-size:13px;">
+          Profile created on ${c.joinDate} · ${orders.length} orders · Last contact via email
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="c360-close">Close</button>
+    </div>
+  `, { large: true });
+
+  $('#c360-close').addEventListener('click', closeModal);
+}
+
+/* ============================================================
+   Utility
+   ============================================================ */
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+/* ============================================================
+   Render dispatcher
+   ============================================================ */
+function render() {
+  // Sidebar active
+  document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  if (view === 'customers') renderCustomers();
+  else if (view === 'orders') renderOrders();
+  else if (view === 'loyalty') renderLoyalty();
+
+  // Trigger reveals on the freshly rendered content
+  triggerReveals();
+  // Re-attach magnetic behavior to any new buttons
+  attachMagnetic();
+}
+
+/* ============================================================
+   Reveal-on-render — IntersectionObserver alternative
+   For SPA-style swap, simpler to flip the .in class on next frame
+   ============================================================ */
+function triggerReveals() {
+  // Use double rAF so the initial state paints before transition fires
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    });
+  });
+}
+
+/* ============================================================
+   Magnetic button — gentle pull toward the cursor on hover
+   ============================================================ */
+function attachMagnetic() {
+  document.querySelectorAll('.btn-magnetic').forEach(btn => {
+    if (btn.dataset.magnetized) return;
+    btn.dataset.magnetized = '1';
+    const STRENGTH = 0.3; // matches skill component recipe
+
+    // Don't attach magnetic on touch devices
+    if (matchMedia('(hover: none)').matches) return;
+
+    btn.addEventListener('mousemove', (e) => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - (r.left + r.width / 2);
+      const y = e.clientY - (r.top + r.height / 2);
+      btn.style.transform = `translate(${x * STRENGTH}px, ${y * STRENGTH}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'translate(0, 0)';
+    });
+  });
+}
+
+/* ============================================================
+   Lenis smooth scroll (from CDN, per skill spec)
+   ============================================================ */
+(function setupSmoothScroll() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.42/bundled/lenis.min.js';
+  script.onload = () => {
+    const lenis = new window.Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  };
+  document.head.appendChild(script);
+})();
+
+document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(el => {
+  el.addEventListener('click', () => { view = el.dataset.view; render(); });
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      view = el.dataset.view;
+      render();
+    }
+  });
+});
+$('#reset-btn').addEventListener('click', () => {
+  if (confirm('Reset to seed data? This will replace all current customers and orders.')) {
+    resetState();
+  }
+});
+$('#reset-btn').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if (confirm('Reset to seed data? This will replace all current customers and orders.')) {
+      resetState();
+    }
+  }
+});
+
+// Remove intro class after the cinematic intro completes,
+// so subsequent re-renders don't replay it.
+window.addEventListener('load', () => {
+  setTimeout(() => document.body.classList.remove('intro'), 1200);
+});
+
+render();
+</script>
+</body>
+</html>
